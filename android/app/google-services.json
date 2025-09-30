@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "503284148548",
+    "project_id": "bindsync-f71b4",
+    "storage_bucket": "bindsync-f71b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503284148548:android:e3bb50f95e7474ee768f11",
+        "android_client_info": {
+          "package_name": "site.archax.bindsync.bindsync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "503284148548-fr2ojivbtegr6d1p5vlunvnr5rgifraa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "site.archax.bindsync.bindsync",
+            "certificate_hash": "70a2f7481d7849f324867a93fe7ecb75b90e0558"
+          }
+        },
+        {
+          "client_id": "503284148548-nbmsp0kcucdnmvsul4qklknhbb66ff36.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCG-g6KMFV8eieIHlM2Qp5bBxEmiLzUmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "503284148548-nbmsp0kcucdnmvsul4qklknhbb66ff36.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "503284148548-r1rs4ogo9evml20scbrfh1a4lbfhlinv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "site.archax.bindsync.bindsync"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
