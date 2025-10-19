@@ -306,8 +306,6 @@ If you encounter any issues or have questions:
 - [ ] Push notifications
 - [ ] End-to-end encryption
 - [ ] Media file support (images, videos)
-- [ ] Voice messages
-- [ ] Group chat support
 - [ ] Message search functionality
 - [ ] Dark/Light theme toggle
 - [ ] Multiple language support
