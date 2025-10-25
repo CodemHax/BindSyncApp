@@ -162,11 +162,13 @@ class CreateMessageRequest {
   final String text;
   final String username;
   final String? reply_to_id;
+  final String? target; // 'telegram', 'discord', or 'both' (null defaults to 'both')
 
   CreateMessageRequest({
     required this.text,
     required this.username,
     this.reply_to_id,
+    this.target,
   });
 
   Map<String, dynamic> toJson() {
@@ -174,6 +176,7 @@ class CreateMessageRequest {
       'text': text,
       'username': username,
       if (reply_to_id != null) 'reply_to_id': reply_to_id,
+      if (target != null) 'target': target,
     };
   }
 }

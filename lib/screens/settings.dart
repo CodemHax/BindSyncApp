@@ -164,7 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () async {
               Navigator.pop(context);
               username_controller.text = FirebaseAuth.instance.currentUser?.displayName ?? '';
-              api_url_controller.text = 'http://localhost:8000';
+              api_url_controller.text = 'https://bindsyncv2.onrender.com';
               setState(() {
                 connection_status = null;
               });

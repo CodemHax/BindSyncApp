@@ -153,9 +153,14 @@ class _HomepageState extends State<Homepage> {
       await prefs_service.set_username(username);
 
       if (replying_to != null) {
+        // Don't pass target for mixed chat - null means send to both
         await api_service.reply_to_message(replying_to!.id, text, username);
       } else {
-        final request = CreateMessageRequest(text: text, username: username);
+        final request = CreateMessageRequest(
+          text: text,
+          username: username,
+          // Don't set target (null) to send to both platforms
+        );
         await api_service.send_message(request);
       }
 
@@ -465,16 +470,20 @@ class _HomepageState extends State<Homepage> {
                                         : const Color(0xFF25D366),
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                message.username,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: message.source == 'discord'
-                                      ? const Color(0xFF5865F2)
-                                      : message.source == 'telegram'
-                                          ? const Color(0xFF0088CC)
-                                          : const Color(0xFF25D366),
+                              Flexible(
+                                child: Text(
+                                  message.username,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: message.source == 'discord'
+                                        ? const Color(0xFF5865F2)
+                                        : message.source == 'telegram'
+                                            ? const Color(0xFF0088CC)
+                                            : const Color(0xFF25D366),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ),
                             ],

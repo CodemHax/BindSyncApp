@@ -117,12 +117,13 @@ class ApiService {
     }
   }
 
-  Future<MessageResponse> reply_to_message(String message_id, String text, String username) async {
+  Future<MessageResponse> reply_to_message(String message_id, String text, String username, {String? target}) async {
     try {
       final server_url = await base_url;
       final payload = {
         'text': text,
         'username': username,
+        if (target != null) 'target': target,
       };
 
       final response = await http.post(

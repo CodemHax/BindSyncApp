@@ -9,7 +9,7 @@ class ChatSelectionPage extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     
     return Scaffold(
-      backgroundColor: const Color(0xFF111B21), // WhatsApp dark background
+      backgroundColor: const Color(0xFF111B21),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F2C34),
         elevation: 0,

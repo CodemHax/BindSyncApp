@@ -69,10 +69,9 @@ class TelegramChatPageState extends State<TelegramChatPage> {
       // Get all messages first, then filter properly for Telegram
       final allMessages = await api_service.get_messages(limit: 100);
 
-      // Filter to show only Telegram messages and API messages sent to Telegram
+      // Filter to show ONLY messages that were sent to Telegram (have tg_msg_id)
       final telegramMessages = allMessages.where((msg) =>
-      msg.source == 'telegram' ||
-          (msg.source == 'api' || msg.source == 'api_reply')
+        msg.tg_msg_id != null
       ).toList();
 
       setState(() {
@@ -127,9 +126,13 @@ class TelegramChatPageState extends State<TelegramChatPage> {
       await prefs_service.set_username(username);
 
       if (replying_to != null) {
-        await api_service.reply_to_message(replying_to!.id, text, username);
+        await api_service.reply_to_message(replying_to!.id, text, username, target: 'telegram');
       } else {
-        final request = CreateMessageRequest(text: text, username: username);
+        final request = CreateMessageRequest(
+          text: text,
+          username: username,
+          target: 'telegram', // Only send to Telegram
+        );
         await api_service.send_message(request);
       }
 

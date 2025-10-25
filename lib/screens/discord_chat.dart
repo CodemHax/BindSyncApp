@@ -69,10 +69,9 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
       // Get all messages first, then filter properly for Discord
       final all_messages = await api_service.get_messages(limit: 100);
 
-      // Filter to show only Discord messages and API messages sent to Discord
+      // Filter to show ONLY messages that were sent to Discord (have dc_msg_id)
       final discord_messages = all_messages.where((msg) =>
-        msg.source == 'discord' ||
-        (msg.source == 'api' || msg.source == 'api_reply')
+        msg.dc_msg_id != null
       ).toList();
 
       setState(() {
@@ -127,9 +126,13 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
       await prefs_service.set_username(current_username);
 
       if (replying_to != null) {
-        await api_service.reply_to_message(replying_to!.id, text, current_username);
+        await api_service.reply_to_message(replying_to!.id, text, current_username, target: 'discord');
       } else {
-        final request = CreateMessageRequest(text: text, username: current_username);
+        final request = CreateMessageRequest(
+          text: text,
+          username: current_username,
+          target: 'discord',
+        );
         await api_service.send_message(request);
       }
 
