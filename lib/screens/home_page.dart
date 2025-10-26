@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../models/message.dart';
 import '../services/api_service.dart';
 import '../services/user_preferences_service.dart';
+import 'token_setup_guide.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -24,6 +25,7 @@ class _HomepageState extends State<Homepage> {
   List<Message> messages = [];
   bool is_loading = false;
   bool is_server_connected = false;
+  bool token_configured = false;
   String? username;
   Message? replying_to;
   Timer? refresh_timer;
@@ -31,10 +33,18 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
+    check_token_configuration();
     load_user_data();
     check_server_connection();
     load_messages();
     start_auto_refresh();
+  }
+
+  Future<void> check_token_configuration() async {
+    final isConfigured = await api_service.is_token_configured();
+    setState(() {
+      token_configured = isConfigured;
+    });
   }
 
   @override
@@ -90,6 +100,48 @@ class _HomepageState extends State<Homepage> {
         this.messages = messages;
       });
       scroll_to_bottom();
+    } on ApiTokenMissingException catch (e) {
+      setState(() {
+        is_server_connected = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('⚠️ API Token Required!\nPlease add your API token in Settings to continue.'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Go to Settings',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ),
+        );
+      }
+    } on ApiTokenInvalidException catch (e) {
+      setState(() {
+        is_server_connected = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('🔒 Invalid API Token!\nYour token is invalid or expired. Please update it in Settings.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Update Token',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         is_server_connected = false;
@@ -153,13 +205,13 @@ class _HomepageState extends State<Homepage> {
       await prefs_service.set_username(username);
 
       if (replying_to != null) {
-        // Don't pass target for mixed chat - null means send to both
+
         await api_service.reply_to_message(replying_to!.id, text, username);
       } else {
         final request = CreateMessageRequest(
           text: text,
           username: username,
-          // Don't set target (null) to send to both platforms
+
         );
         await api_service.send_message(request);
       }
@@ -167,6 +219,40 @@ class _HomepageState extends State<Homepage> {
       message_controller.clear();
       set_replying_to(null);
       await load_messages();
+    } on ApiTokenMissingException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('⚠️ API Token Required!\nPlease add your API token in Settings to send messages.'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Go to Settings',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ),
+        );
+      }
+    } on ApiTokenInvalidException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('🔒 Invalid API Token!\nYour token is invalid or expired. Please update it in Settings.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Update Token',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -223,18 +309,28 @@ class _HomepageState extends State<Homepage> {
           if (replying_to != null) build_reply_banner(),
 
           Expanded(
-            child: is_loading && messages.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF25D366)),
+            child: !token_configured
+                ? SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        const TokenSetupGuide(),
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   )
-                : ListView.builder(
-                    controller: scroll_controller,
-                    padding: const EdgeInsets.all(8),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) => build_mixed_message(messages[index]),
-                  ),
+                : is_loading && messages.isEmpty
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF25D366)),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scroll_controller,
+                        padding: const EdgeInsets.all(8),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) => build_mixed_message(messages[index]),
+                      ),
           ),
 
           build_mixed_message_input(),

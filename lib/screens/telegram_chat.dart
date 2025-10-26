@@ -66,10 +66,10 @@ class TelegramChatPageState extends State<TelegramChatPage> {
     });
 
     try {
-      // Get all messages first, then filter properly for Telegram
+
       final allMessages = await api_service.get_messages(limit: 100);
 
-      // Filter to show ONLY messages that were sent to Telegram (have tg_msg_id)
+
       final telegramMessages = allMessages.where((msg) =>
         msg.tg_msg_id != null
       ).toList();
@@ -131,7 +131,7 @@ class TelegramChatPageState extends State<TelegramChatPage> {
         final request = CreateMessageRequest(
           text: text,
           username: username,
-          target: 'telegram', // Only send to Telegram
+          target: 'telegram',
         );
         await api_service.send_message(request);
       }
@@ -330,7 +330,7 @@ class TelegramChatPageState extends State<TelegramChatPage> {
       child: Slidable(
         key: ValueKey(message.id),
 
-        // Enable swipe from left to right for reply (like Telegram)
+
         startActionPane: ActionPane(
           motion: const StretchMotion(),
           extentRatio: 0.25,

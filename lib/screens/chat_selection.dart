@@ -89,7 +89,7 @@ class ChatSelectionPage extends StatelessWidget {
             ),
           ),
 
-          // Chat options
+
           Expanded(
             child: Container(
               color: const Color(0xFF0B141A),

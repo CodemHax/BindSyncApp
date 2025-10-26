@@ -66,10 +66,10 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
     });
 
     try {
-      // Get all messages first, then filter properly for Discord
+
       final all_messages = await api_service.get_messages(limit: 100);
 
-      // Filter to show ONLY messages that were sent to Discord (have dc_msg_id)
+
       final discord_messages = all_messages.where((msg) =>
         msg.dc_msg_id != null
       ).toList();
@@ -157,7 +157,7 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF36393F), // Discord dark background
+      backgroundColor: const Color(0xFF36393F),
       appBar: _buildDiscordAppBar(),
       body: Column(
         children: [
@@ -205,7 +205,7 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
   PreferredSizeWidget _buildDiscordAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFF5865F2), // Discord purple
+      backgroundColor: const Color(0xFF5865F2),
       titleSpacing: 0,
       title: Row(
         children: [
@@ -317,10 +317,10 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Slidable(
-        // Key for the slidable widget
+
         key: ValueKey(message.id),
 
-        // Enable swipe from left to right for reply (like Telegram)
+
         startActionPane: ActionPane(
           motion: const StretchMotion(),
           extentRatio: 0.25,
@@ -328,7 +328,7 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
             SlidableAction(
               onPressed: (context) {
                 set_replying_to(message);
-                // Show haptic feedback like Telegram
+
                 HapticFeedback.lightImpact();
               },
               backgroundColor: const Color(0xFF5865F2),
@@ -369,8 +369,8 @@ class _DiscordChatPageState extends State<DiscordChatPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: is_me
-                        ? const Color(0xFF5865F2).withValues(alpha: 0.2) // Light Discord purple
-                        : const Color(0xFF2F3136), // Discord message background
+                        ? const Color(0xFF5865F2).withValues(alpha: 0.2)
+                        : const Color(0xFF2F3136),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),

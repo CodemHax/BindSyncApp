@@ -162,7 +162,7 @@ class CreateMessageRequest {
   final String text;
   final String username;
   final String? reply_to_id;
-  final String? target; // 'telegram', 'discord', or 'both' (null defaults to 'both')
+  final String? target;
 
   CreateMessageRequest({
     required this.text,

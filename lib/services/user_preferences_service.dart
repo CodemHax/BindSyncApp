@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserPreferencesService {
   static const String username_key = 'user_username';
   static const String api_base_url_key = 'api_base_url';
+  static const String api_token_key = 'api_token';
   static const String default_api_url = 'https://bindsyncv2.onrender.com';
 
   Future<String?> get_username() async {
@@ -23,6 +24,16 @@ class UserPreferencesService {
   Future<void> set_api_base_url(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(api_base_url_key, url);
+  }
+
+  Future<String?> get_api_token() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(api_token_key);
+  }
+
+  Future<void> set_api_token(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(api_token_key, token);
   }
 
   Future<void> clear_preferences() async {

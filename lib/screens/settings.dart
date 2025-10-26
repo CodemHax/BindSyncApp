@@ -15,7 +15,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final ApiService api_service = ApiService();
   final TextEditingController username_controller = TextEditingController();
   final TextEditingController api_url_controller = TextEditingController();
-  
+  final TextEditingController api_token_controller = TextEditingController();
+
   bool is_loading = true;
   bool is_saving = false;
   bool is_testing_connection = false;
@@ -31,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void dispose() {
     username_controller.dispose();
     api_url_controller.dispose();
+    api_token_controller.dispose();
     super.dispose();
   }
   
@@ -43,9 +45,11 @@ class _SettingsPageState extends State<SettingsPage> {
       final user = FirebaseAuth.instance.currentUser;
       final username = await prefs_service.get_username() ?? user?.displayName ?? '';
       final api_url = await prefs_service.get_api_base_url();
-      
+      final api_token = await prefs_service.get_api_token() ?? '';
+
       username_controller.text = username;
       api_url_controller.text = api_url;
+      api_token_controller.text = api_token;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _saveSettings() async {
     final username = username_controller.text.trim();
     final apiUrl = api_url_controller.text.trim();
+    final apiToken = api_token_controller.text.trim();
 
     if (username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +97,10 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       await prefs_service.set_username(username);
       await prefs_service.set_api_base_url(apiUrl);
-      
+      if (apiToken.isNotEmpty) {
+        await prefs_service.set_api_token(apiToken);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -123,29 +131,58 @@ class _SettingsPageState extends State<SettingsPage> {
       );
       return;
     }
-    
+
+    // Validate URL format
+    final uri = Uri.tryParse(apiUrl);
+    if (uri == null || !(uri.isAbsolute && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid http/https URL')),
+      );
+      return;
+    }
+
     setState(() {
       is_testing_connection = true;
       connection_status = null;
     });
     
     try {
+
       await prefs_service.set_api_base_url(apiUrl);
-      final isConnected = await api_service.check_server_status();
-      
-      setState(() {
-        connection_status = isConnected 
-            ? 'Connection successful! ✅' 
-            : 'Connection failed. Check URL and server status. ❌';
-      });
+
+
+      final test_api_service = ApiService();
+      final isConnected = await test_api_service.check_server_status();
+
+      if (mounted) {
+        setState(() {
+          connection_status = isConnected
+              ? 'Connection successful! ✅'
+              : 'Connection failed. Check URL and server status. ❌';
+        });
+
+        if (isConnected) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Server connection test passed!'),
+              backgroundColor: Color(0xFF25D366),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
     } catch (e) {
-      setState(() {
-        connection_status = 'Connection error: $e ❌';
-      });
+      if (mounted) {
+        setState(() {
+          connection_status = 'Connection error: $e ❌';
+        });
+      }
     } finally {
-      setState(() {
-        is_testing_connection = false;
-      });
+      if (mounted) {
+        setState(() {
+          is_testing_connection = false;
+        });
+      }
     }
   }
   
@@ -165,6 +202,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Navigator.pop(context);
               username_controller.text = FirebaseAuth.instance.currentUser?.displayName ?? '';
               api_url_controller.text = 'https://bindsyncv2.onrender.com';
+              api_token_controller.text = '';
               setState(() {
                 connection_status = null;
               });
@@ -479,6 +517,82 @@ class _SettingsPageState extends State<SettingsPage> {
                         const SizedBox(height: 8),
                         Text(
                           'URL of your BindSync API server',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F2C34),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.key,
+                                color: Color(0xFFFFD700),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'API Token',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: api_token_controller,
+                          style: const TextStyle(color: Colors.white),
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: 'Enter your API token',
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                            filled: true,
+                            fillColor: const Color(0xFF0B141A),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.visibility, color: Colors.white54),
+                              onPressed: () {
+                                // Toggle visibility if needed
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Required for API authentication. Get from admin panel.',
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.6),
                             fontSize: 12,
